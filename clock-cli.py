@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-clock-cli.py — a crisp terminal analog clock.
+clock-cli.py — a crisp terminal analog clock. Learn how to read time in English.
 
 Renders an analog wall clock with Pillow, then paints it in the terminal using
 Braille characters: each character cell packs a 2x4 grid of dots, so the dial
@@ -355,7 +355,9 @@ def run_live(D, Wc, Hc, use_color, theme):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="A crisp terminal analog clock.")
+    ap = argparse.ArgumentParser(
+        description="A crisp terminal analog clock that reads the time aloud in "
+                    "plain English — learn how to read time in English.")
     ap.add_argument("--once", action="store_true", help="draw one frame and exit")
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--color", action="store_const", const="vivid", dest="theme",

@@ -1,7 +1,7 @@
 # clock-cli
 
 A crisp terminal analog clock that also reads the time aloud in plain English —
-handy for teaching how to read an analog clock.
+**learn how to read time in English** while you watch the clock tick.
 
 The dial is rendered with Pillow and painted using **Braille characters**, so
 each character cell packs a 2×4 grid of dots and the rim, numbers, tick marks,
