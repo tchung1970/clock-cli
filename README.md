@@ -31,6 +31,7 @@ clock-cli
 ```
 clock-cli                 # live clock, centered; press q to quit
 clock-cli --once          # draw a single frame and exit
+clock-cli --set 9:15      # show a fixed time (HH:MM or HH:MM:SS)
 clock-cli --color         # full-color dial (default)
 clock-cli --mono          # monochrome dial
 clock-cli --matrix        # green matrix dial

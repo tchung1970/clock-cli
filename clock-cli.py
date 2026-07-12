@@ -10,6 +10,7 @@ line-art. Below it, the time is read out in plain English to help learners.
 Usage:
     python3 clock-cli.py               # live clock, centered; press q to quit
     python3 clock-cli.py --once        # draw a single frame and exit
+    python3 clock-cli.py --set 9:15    # show a fixed time (HH:MM or HH:MM:SS)
     python3 clock-cli.py --mono        # --color (default) | --mono | --matrix
 
 Requires: Pillow  (pip install pillow)
@@ -274,6 +275,24 @@ def time_in_words(now):
     return f"{_num_word(to).capitalize()}{unit} to {nw}"
 
 
+def parse_set_time(spec):
+    """Parse a --set value ('HH:MM' or 'HH:MM:SS') into a fixed datetime.
+
+    Uses today's date; only the hour/minute/second are shown on the dial.
+    Raises argparse.ArgumentTypeError on malformed input.
+    """
+    parts = spec.split(":")
+    if len(parts) not in (2, 3) or not all(p.isdigit() for p in parts):
+        raise argparse.ArgumentTypeError(
+            f"invalid time {spec!r}; use HH:MM or HH:MM:SS")
+    nums = [int(p) for p in parts] + [0]  # pad seconds if omitted
+    h, m, s = nums[0], nums[1], nums[2]
+    if not (0 <= h <= 23 and 0 <= m <= 59 and 0 <= s <= 59):
+        raise argparse.ArgumentTypeError(
+            f"time out of range {spec!r}; hours 0-23, minutes/seconds 0-59")
+    return datetime.now().replace(hour=h, minute=m, second=s, microsecond=0)
+
+
 def _banner_reserve():
     """Rows to keep clear below the clock for the reading + labels."""
     return 12
@@ -318,7 +337,7 @@ def frame(D, Wc, Hc, now, use_color, theme):
     return ("\n" * top) + "\n".join(lines)
 
 
-def run_live(D, Wc, Hc, use_color, theme):
+def run_live(D, Wc, Hc, use_color, theme, fixed=None):
     interactive = sys.stdin.isatty() and HAVE_TTY
     old = termios.tcgetattr(sys.stdin) if interactive else None
     if interactive:
@@ -340,10 +359,11 @@ def run_live(D, Wc, Hc, use_color, theme):
     try:
         sys.stdout.write(HIDE_CURSOR + CLEAR)
         while True:
-            now = datetime.now()
+            now = fixed or datetime.now()
             sys.stdout.write(HOME + CLEAR + frame(D, Wc, Hc, now, use_color, theme))
             sys.stdout.flush()
-            if quit_pressed(1 - datetime.now().microsecond / 1_000_000):
+            # A fixed time never changes, so just wait for the quit key.
+            if quit_pressed(3600 if fixed else 1 - datetime.now().microsecond / 1_000_000):
                 break
     except KeyboardInterrupt:
         pass
@@ -358,6 +378,8 @@ def main():
     ap = argparse.ArgumentParser(
         description="Learn to read the time in English — a terminal analog clock.")
     ap.add_argument("--once", action="store_true", help="draw one frame and exit")
+    ap.add_argument("--set", dest="set_time", metavar="HH:MM", type=parse_set_time,
+                    help="show a fixed time (HH:MM or HH:MM:SS) instead of now")
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--color", action="store_const", const="vivid", dest="theme",
                    help="full-color dial (default)")
@@ -373,10 +395,10 @@ def main():
     D, Wc, Hc = fit_grid()
 
     if args.once:
-        print(frame(D, Wc, Hc, datetime.now(), use_color, theme))
+        print(frame(D, Wc, Hc, args.set_time or datetime.now(), use_color, theme))
         return
 
-    run_live(D, Wc, Hc, use_color, theme)
+    run_live(D, Wc, Hc, use_color, theme, fixed=args.set_time)
 
 
 if __name__ == "__main__":
