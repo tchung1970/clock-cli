@@ -56,4 +56,4 @@ it ("Nine minutes past ten").
 
 ## License
 
-[MIT](LICENSE) © 2026 Thomas Chung
+This project is open source and available under the [MIT License](LICENSE).
